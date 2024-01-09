@@ -10,11 +10,13 @@ import time
 
 class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, app, notification_queue):
+        # Initialize the FileChangeHandler with the FileWatcherApp instance and notification queue
         self.app = app
         self.notification_queue = notification_queue
         self.changed_files = set()
 
     def on_modified(self, event):
+        # Event handler for file modification events
         if event.is_directory:
             return
 
@@ -29,33 +31,40 @@ class FileChangeHandler(FileSystemEventHandler):
 
 class NotificationHandler(Thread):
     def __init__(self, app, notification_queue):
+        # Initialize the NotificationHandler with the FileWatcherApp instance and notification queue
         super().__init__()
         self.app = app
         self.notification_queue = notification_queue
         self.daemon = True
 
     def run(self):
+        # Run the thread to handle notifications
         while True:
             src_path = self.notification_queue.get()
             self.app.show_notification(f"File changed: {src_path}")
 
 class FileWatcherApp:
     def __init__(self, root):
+        # Initialize the FileWatcherApp with the root window
         self.root = root
         self.root.title("Luc's File Watcher App")
 
+        # Initialize watchers list, configuration file path, and notification queue
         self.watchers = []
         self.config_file = os.path.expanduser("~") + '/watcher_config.json'  # Place the file in the home directory
-
         self.notification_queue = Queue()
+
+        # Initialize and start the NotificationHandler thread
         self.notification_handler = NotificationHandler(self, self.notification_queue)
         self.notification_handler.start()
 
+        # Create the GUI, load configuration, and update the treeview
         self.create_gui()
         self.load_config()
         self.update_treeview()
 
     def create_gui(self):
+        # Create the graphical user interface components
         self.tree = ttk.Treeview(self.root, columns=('Status', 'Folder'))
         self.tree.heading('#0', text='Watcher')
         self.tree.heading('Status', text='Status')
@@ -75,6 +84,7 @@ class FileWatcherApp:
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def add_watcher(self):
+        # Add a folder watcher
         folder = filedialog.askdirectory()
         if folder:
             watcher = {'folder': folder, 'status': 'started'}
@@ -84,6 +94,7 @@ class FileWatcherApp:
             self.start_observer(len(self.watchers) - 1)  # Start the observer for the new watcher
 
     def start_watcher(self):
+        # Start a selected watcher
         selected_item = self.tree.selection()
         if selected_item:
             index = int(selected_item[0]) - 1
@@ -92,6 +103,7 @@ class FileWatcherApp:
             self.update_treeview()
 
     def stop_watcher(self):
+        # Stop a selected watcher
         selected_item = self.tree.selection()
         if selected_item:
             index = int(selected_item[0]) - 1
@@ -100,6 +112,7 @@ class FileWatcherApp:
             self.update_treeview()
 
     def remove_watcher(self):
+        # Remove a selected watcher
         selected_item = self.tree.selection()
         if selected_item:
             index = int(selected_item[0]) - 1
@@ -108,6 +121,7 @@ class FileWatcherApp:
             self.update_treeview()
 
     def start_observer(self, index):
+        # Start the file system observer for a watcher
         folder = self.watchers[index]['folder']
         event_handler = FileChangeHandler(self, self.notification_queue)
         observer = Observer()
@@ -116,6 +130,7 @@ class FileWatcherApp:
         self.watchers[index]['observer'] = observer
 
     def stop_observer(self, index):
+        # Stop the file system observer for a watcher
         try:
             observer = self.watchers[index]['observer']
             observer.stop()
@@ -124,9 +139,11 @@ class FileWatcherApp:
             print("Observer is not available or already stopped")
 
     def show_notification(self, message):
+        # Show a notification dialog
         messagebox.showinfo('File Change', message)
 
     def update_treeview(self):
+        # Update the treeview with watcher information
         for item in self.tree.get_children():
             self.tree.delete(item)
 
@@ -136,6 +153,7 @@ class FileWatcherApp:
             self.tree.insert('', 'end', iid=str(i), text=f"Watcher {i}", values=(status, folder))
 
     def load_config(self):
+        # Load configuration from a JSON file
         try:
             if os.path.exists(self.config_file):
                 with open(self.config_file, 'r') as file:
@@ -155,6 +173,7 @@ class FileWatcherApp:
             self.watchers = []
 
     def save_config(self):
+        # Save configuration to a JSON file
         for watcher in self.watchers:
             if 'observer' in watcher:
                 del watcher['observer']
@@ -162,10 +181,12 @@ class FileWatcherApp:
             json.dump(self.watchers, file, indent=2)
 
     def on_close(self):
+        # Save configuration before closing the application
         self.save_config()
         self.root.destroy()
 
 if __name__ == "__main__":
+    # Run the FileWatcherApp
     root = tk.Tk()
     app = FileWatcherApp(root)
     root.mainloop()
