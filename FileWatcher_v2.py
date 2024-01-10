@@ -8,6 +8,7 @@ from watchdog.events import FileSystemEventHandler
 from queue import Queue
 from threading import Thread
 
+# Één pop-up per wijziging
 
 class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, app, notification_queue):
