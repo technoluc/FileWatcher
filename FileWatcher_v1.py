@@ -78,8 +78,8 @@ class FileWatcherApp:
         self.tree.heading('Folder', text='Folder')
 
         # Define tags for the Treeview items
-        self.tree.tag_configure('started', foreground='green')
-        self.tree.tag_configure('stopped', foreground='red')
+        self.tree.tag_configure('Active', foreground='green')
+        self.tree.tag_configure('Inactive', foreground='red')
 
         add_button = ttk.Button(self.root, text='Add Folder', command=self.add_watcher)
         start_button = ttk.Button(self.root, text='Start Watcher', command=self.start_watcher)
@@ -99,7 +99,7 @@ class FileWatcherApp:
         # Add a folder watcher
         folder = filedialog.askdirectory()
         if folder:
-            watcher = {'folder': folder, 'status': 'started'}
+            watcher = {'folder': folder, 'status': 'Active'}
             self.watchers.append(watcher)
             self.update_treeview()  # Update the treeview after adding
             self.save_config()  # Save the configuration immediately after adding
@@ -110,7 +110,7 @@ class FileWatcherApp:
         selected_item = self.tree.selection()
         if selected_item:
             index = int(selected_item[0]) - 1
-            self.watchers[index]['status'] = 'started'
+            self.watchers[index]['status'] = 'Active'
             self.start_observer(index)
             self.update_treeview()
 
@@ -119,7 +119,7 @@ class FileWatcherApp:
         selected_item = self.tree.selection()
         if selected_item:
             index = int(selected_item[0]) - 1
-            self.watchers[index]['status'] = 'stopped'
+            self.watchers[index]['status'] = 'Inactive'
             self.stop_observer(index)
             self.update_treeview()
 
@@ -148,7 +148,7 @@ class FileWatcherApp:
             observer.stop()
             observer.join()
         except KeyError:
-            print("Observer is not available or already stopped")
+            print("Observer is not available or already Inactive")
 
     def show_notification(self, message):
         # Show a notification dialog
@@ -165,10 +165,10 @@ class FileWatcherApp:
             item_id = str(i)
 
             # Insert the item with the appropriate tag based on the status
-            if status == 'started':
-                self.tree.insert('', 'end', iid=item_id, text=f"Watcher {i}", values=(status, folder), tags=('started',))
+            if status == 'Active':
+                self.tree.insert('', 'end', iid=item_id, text=f"Watcher {i}", values=(status, folder), tags=('Active',))
             else:
-                self.tree.insert('', 'end', iid=item_id, text=f"Watcher {i}", values=(status, folder), tags=('stopped',))
+                self.tree.insert('', 'end', iid=item_id, text=f"Watcher {i}", values=(status, folder), tags=('Inactive',))
 
     def load_config(self):
         # Load configuration from a JSON file
@@ -178,10 +178,10 @@ class FileWatcherApp:
                     self.watchers = json.load(file)
 
                     for i, watcher in enumerate(self.watchers, start=1):
-                        status = watcher.get('status', 'stopped')
+                        status = watcher.get('status', 'Inactive')
                         folder = watcher['folder']
 
-                        if status == 'started':
+                        if status == 'Active':
                             self.start_observer(i - 1)
 
             else:
