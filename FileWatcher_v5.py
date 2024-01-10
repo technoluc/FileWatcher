@@ -9,11 +9,8 @@ from watchdog.events import FileSystemEventHandler
 from queue import Queue
 from threading import Thread
 
-# Één pop-up met list, verbeterde opmaak
 
-import threading
-
-# single pop-up, better formatting, folder moves notifications. 
+# single pop-up, better formatting, folder moves notifications. no Thumbs.db
 
 class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, app, notification_queue):
@@ -37,6 +34,10 @@ class FileChangeHandler(FileSystemEventHandler):
         
         src_path = event.src_path
 
+        if src_path.endswith("Thumbs.db"):
+            # Ignore changes to Thumbs.db
+            return
+
         if src_path not in self.app.changed_files:
             self.app.changed_files.add(src_path)
 
@@ -48,6 +49,10 @@ class FileChangeHandler(FileSystemEventHandler):
     def on_created(self, event):
         # Event handler for new file/directory creation events
         src_path = event.src_path
+
+        if src_path.endswith("Thumbs.db"):
+            # Ignore changes to Thumbs.db
+            return
 
         if src_path not in self.app.changed_files:
             self.app.changed_files.add(src_path)
