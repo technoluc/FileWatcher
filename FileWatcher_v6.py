@@ -240,9 +240,13 @@ class FileWatcherApp:
             json.dump(self.watchers, file, indent=2)
 
     def on_close(self):
-        # Save configuration before closing the application
-        self.save_config()
-        self.root.destroy()
+        # Ask the user for confirmation before closing
+        if messagebox.askokcancel("Quit Luc's FileWatcher", "Do you really want to quit?\nYou will no longer receive notifications."):
+            # Perform any necessary cleanup or saving operations before closing the application
+            self.save_config()
+
+            # Close the window
+            self.root.destroy()
 
 if __name__ == "__main__":
     # Run the FileWatcherApp
