@@ -48,7 +48,7 @@ class FileWatcherApp:
     def __init__(self, root):
         # Initialize the FileWatcherApp with the root window
         self.root = root
-        self.root.title("Luc's File Watcher App")
+        self.root.title("Luc's FileWatcher")
 
         # Initialize watchers list, configuration file path, and notification queue
         self.watchers = []
@@ -77,6 +77,10 @@ class FileWatcherApp:
         self.tree.heading('Status', text='Status')
         self.tree.heading('Folder', text='Folder')
 
+        # Define tags for the Treeview items
+        self.tree.tag_configure('started', foreground='green')
+        self.tree.tag_configure('stopped', foreground='red')
+
         add_button = ttk.Button(self.root, text='Add Folder', command=self.add_watcher)
         start_button = ttk.Button(self.root, text='Start Watcher', command=self.start_watcher)
         stop_button = ttk.Button(self.root, text='Stop Watcher', command=self.stop_watcher)
@@ -89,6 +93,7 @@ class FileWatcherApp:
         remove_button.pack(side=tk.LEFT)
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
 
     def add_watcher(self):
         # Add a folder watcher
@@ -157,7 +162,13 @@ class FileWatcherApp:
         for i, watcher in enumerate(self.watchers, start=1):
             status = watcher['status']
             folder = watcher['folder']
-            self.tree.insert('', 'end', iid=str(i), text=f"Watcher {i}", values=(status, folder))
+            item_id = str(i)
+
+            # Insert the item with the appropriate tag based on the status
+            if status == 'started':
+                self.tree.insert('', 'end', iid=item_id, text=f"Watcher {i}", values=(status, folder), tags=('started',))
+            else:
+                self.tree.insert('', 'end', iid=item_id, text=f"Watcher {i}", values=(status, folder), tags=('stopped',))
 
     def load_config(self):
         # Load configuration from a JSON file
