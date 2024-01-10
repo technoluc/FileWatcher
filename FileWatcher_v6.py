@@ -9,7 +9,11 @@ from watchdog.events import FileSystemEventHandler
 from queue import Queue
 from threading import Thread
 
-# single pop-up, better formatting, folder moves notifications. no Thumbs.db
+# Single Pop-up, 
+# Better Formatting
+# Folder move notifications 
+# No Thumbs.db notifications
+# AskToQuit
 
 class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, app, notification_queue):
