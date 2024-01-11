@@ -54,24 +54,39 @@ class FileChangeHandler(FileSystemEventHandler):
                 self.timer_id = self.app.root.after(1000, self.notify_after_delay)
                 self.timer_running = True
 
-    def on_moved(self, event):
-        src_path = event.src_path
-        dest_path = event.dest_path
+    # def on_moved(self, event):
+    #     src_path = event.src_path
+    #     dest_path = event.dest_path
 
-        if self.ignore_file(src_path) or self.ignore_file(dest_path):
+    #     if self.ignore_file(src_path) or self.ignore_file(dest_path):
+    #         return
+
+    #     # Check if the move is within the same directory
+    #     if os.path.dirname(src_path) == os.path.dirname(dest_path):
+    #         self.on_modified(event)  # Treat it as a modification within the same directory
+    #     else:
+    #         # Treat it as a move to another directory
+    #         if src_path not in self.app.changed_files:
+    #             self.app.changed_files.add(src_path)
+
+    #             if not self.timer_running:
+    #                 self.app.root.after(1000, self.notify_after_delay)
+    #                 self.timer_running = True
+
+    def on_moved(self, event):
+        # Handle file movements (renaming or moving files/directories)
+        src_path = event.src_path
+
+        if self.ignore_file(src_path):
             return
 
-        # Check if the move is within the same directory
-        if os.path.dirname(src_path) == os.path.dirname(dest_path):
-            self.on_modified(event)  # Treat it as a modification within the same directory
-        else:
-            # Treat it as a move to another directory
-            if src_path not in self.app.changed_files:
-                self.app.changed_files.add(src_path)
+        if src_path not in self.app.changed_files:
+            self.app.changed_files.add(src_path)
 
-                if not self.timer_running:
-                    self.app.root.after(1000, self.notify_after_delay)
-                    self.timer_running = True
+            if not self.timer_running:
+                # Schedule the notification after a delay
+                self.timer_id = self.app.root.after(1000, self.notify_after_delay)
+                self.timer_running = True
 
 
     def on_created(self, event):
