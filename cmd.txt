@@ -1,0 +1,2 @@
+pyinstaller.exe --onefile --windowed --icon=ico.ico --add-binary "ico.ico;." .\FileWatcher_v8.py
+pyinstaller.exe --onefile --windowed --icon=ico.ico --add-binary "ico.icns;." .\FileWatcher_v8.py
