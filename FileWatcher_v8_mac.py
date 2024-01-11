@@ -8,6 +8,8 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from queue import Queue
 from threading import Thread
+from plyer import notification  # Import notification from plyer
+
 
 # Single Pop-up, 
 # Better Formatting
@@ -29,13 +31,13 @@ class FileChangeHandler(FileSystemEventHandler):
         self.timer_running = False
 
     def ignore_file(self, file_path):
-        ignored_files = ['.DS_Store', 'Thumbs.db', '.fseventsd', '.Spotlight-V100']
+        ignored_files = ['.DS_Store', 'Thumbs.db']
         return os.path.basename(file_path) in ignored_files
 
     def on_modified(self, event):
         if event.is_directory:
             return self.on_created(event)
-        
+
         src_path = event.src_path
 
         if self.ignore_file(src_path):
@@ -86,7 +88,6 @@ class FileWatcherApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Luc's FileWatcher")
-
         self.watchers = []
         self.config_file = os.path.expanduser("~") + '/watcher_config.json'
         self.notification_queue = Queue()
@@ -94,10 +95,6 @@ class FileWatcherApp:
 
         self.notification_handler = NotificationHandler(self, self.notification_queue)
         self.notification_handler.start()
-
-        icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ico.ico')  # Replace 'ico.icns' with your actual icon file
-        if os.path.exists(icon_path):
-            root.iconbitmap(icon_path)
 
         self.create_gui()
         self.load_config()
@@ -126,17 +123,15 @@ class FileWatcherApp:
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def add_watcher(self):
-        # Add a folder watcher
         folder = filedialog.askdirectory()
         if folder:
             watcher = {'folder': folder, 'status': 'Active'}
             self.watchers.append(watcher)
-            self.update_treeview()  # Update the treeview after adding
-            self.save_config()  # Save the configuration immediately after adding
-            self.start_observer(len(self.watchers) - 1)  # Start the observer for the new watcher
+            self.update_treeview()
+            self.save_config()
+            self.start_observer(len(self.watchers) - 1)
 
     def start_watcher(self):
-        # Start a selected watcher
         selected_item = self.tree.selection()
         if selected_item:
             index = int(selected_item[0]) - 1
@@ -145,7 +140,6 @@ class FileWatcherApp:
             self.update_treeview()
 
     def stop_watcher(self):
-        # Stop a selected watcher
         selected_item = self.tree.selection()
         if selected_item:
             index = int(selected_item[0]) - 1
@@ -154,7 +148,6 @@ class FileWatcherApp:
             self.update_treeview()
 
     def remove_watcher(self):
-        # Remove a selected watcher
         selected_item = self.tree.selection()
         if selected_item:
             index = int(selected_item[0]) - 1
@@ -163,7 +156,6 @@ class FileWatcherApp:
             self.update_treeview()
 
     def start_observer(self, index):
-        # Start the file system observer for a watcher
         folder = self.watchers[index]['folder']
         event_handler = FileChangeHandler(self, self.notification_queue)
         observer = Observer()
@@ -172,7 +164,6 @@ class FileWatcherApp:
         self.watchers[index]['observer'] = observer
 
     def stop_observer(self, index):
-        # Stop the file system observer for a watcher
         try:
             observer = self.watchers[index]['observer']
             observer.stop()
@@ -181,32 +172,14 @@ class FileWatcherApp:
             print("Observer is not available or already Inactive")
 
     def show_notification(self, message):
-        # Schedule the show_notification method to run in the main thread
-        self.root.after(0, self._show_notification, message)
-
-    def _show_notification(self, message):
-        # Show a notification dialog with wraplength using Toplevel
-        popup = tk.Toplevel(self.root)
-        popup.title('File Change')
-
-        label = ttk.Label(popup, text=message, wraplength=500)  # Pas de breedte aan indien nodig
-        label.pack(padx=10, pady=10)
-
-        ok_button = ttk.Button(popup, text='OK', command=popup.destroy)
-        ok_button.pack(pady=10)
-
-        # Center the popup window on the screen
-        popup.geometry(f'+{self.root.winfo_x() + (self.root.winfo_width() - popup.winfo_reqwidth()) // 2}+{self.root.winfo_y() + (self.root.winfo_height() - popup.winfo_reqheight()) // 2}')
-
-        # Make the popup transient, so it stays on top of the main window
-        popup.transient(self.root)
-        popup.grab_set()
-
-        # Run the main loop for the popup
-        popup.mainloop()
+        # Use plyer to display native macOS notifications
+        notification.notify(
+            title='File Change',
+            message=message,
+            app_name='Luc\'s FileWatcher',
+        )
 
     def update_treeview(self):
-        # Update the treeview with watcher information
         for item in self.tree.get_children():
             self.tree.delete(item)
 
@@ -215,14 +188,12 @@ class FileWatcherApp:
             folder = watcher['folder']
             item_id = str(i)
 
-            # Insert the item with the appropriate tag based on the status
             if status == 'Active':
                 self.tree.insert('', 'end', iid=item_id, text=f"Watcher {i}", values=(status, folder), tags=('Active',))
             else:
                 self.tree.insert('', 'end', iid=item_id, text=f"Watcher {i}", values=(status, folder), tags=('Inactive',))
 
     def load_config(self):
-        # Load configuration from a JSON file
         try:
             if os.path.exists(self.config_file):
                 with open(self.config_file, 'r') as file:
@@ -234,7 +205,6 @@ class FileWatcherApp:
 
                         if status == 'Active':
                             self.start_observer(i - 1)
-
             else:
                 print("Configuration file does not exist.")
         except json.decoder.JSONDecodeError:
@@ -242,7 +212,6 @@ class FileWatcherApp:
             self.watchers = []
 
     def save_config(self):
-        # Save configuration to a JSON file
         for watcher in self.watchers:
             if 'observer' in watcher:
                 del watcher['observer']
@@ -250,16 +219,11 @@ class FileWatcherApp:
             json.dump(self.watchers, file, indent=2)
 
     def on_close(self):
-        # Ask the user for confirmation before closing
         if messagebox.askokcancel("Quit Luc's FileWatcher", "Do you really want to quit?\nYou will no longer receive notifications."):
-            # Perform any necessary cleanup or saving operations before closing the application
             self.save_config()
-
-            # Close the window
             self.root.destroy()
 
 if __name__ == "__main__":
-    # Run the FileWatcherApp
     root = tk.Tk()
     app = FileWatcherApp(root)
     root.mainloop()
