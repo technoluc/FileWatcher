@@ -12,7 +12,7 @@ from threading import Thread
 # Single Pop-up, 
 # Better Formatting
 # Folder move notifications 
-# No Thumbs.db notifications
+# No Thumbs.db notifications, NO .DS_Store
 # AskToQuit
 # Scaling
 
@@ -30,6 +30,12 @@ class FileChangeHandler(FileSystemEventHandler):
         self.app.changed_files.clear()
         self.timer_running = False
 
+    def ignore_file(self, file_path):
+        # Function to determine whether to ignore a file based on its name
+        ignored_files = ['.DS_Store', 'Thumbs.db']
+        return os.path.basename(file_path) in ignored_files
+
+
     def on_modified(self, event):
         # Event handler for file modification events
         if event.is_directory:
@@ -38,8 +44,8 @@ class FileChangeHandler(FileSystemEventHandler):
         
         src_path = event.src_path
 
-        if src_path.endswith("Thumbs.db"):
-            # Ignore changes to Thumbs.db
+        if self.ignore_file(src_path):
+            # Ignore changes to specified files
             return
 
         if src_path not in self.app.changed_files:
@@ -54,9 +60,10 @@ class FileChangeHandler(FileSystemEventHandler):
         # Event handler for new file/directory creation events
         src_path = event.src_path
 
-        if src_path.endswith("Thumbs.db"):
-            # Ignore changes to Thumbs.db
+        if self.ignore_file(src_path):
+            # Ignore changes to specified files
             return
+
         if event.is_directory:
             # Ignore additional on_created events for directories (to avoid duplicate notifications)
             return
