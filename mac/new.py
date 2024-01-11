@@ -8,6 +8,9 @@ from watchdog.events import FileSystemEventHandler
 from queue import Queue
 from threading import Thread
 from plyer import notification  # Importeer de plyer-notificatiemodule
+from plyer.platforms import darwin
+
+
 
 class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, app, notification_queue):
