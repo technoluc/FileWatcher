@@ -8,8 +8,8 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from queue import Queue
 from threading import Thread
-from plyer import notification  # Import notification from plyer
-
+from plyer import notification
+from plyer.platforms.macosx import notification as mac_notification
 
 # Single Pop-up, 
 # Better Formatting
@@ -25,6 +25,9 @@ class FileChangeHandler(FileSystemEventHandler):
         self.timer_running = False
 
     def notify_after_delay(self):
+        # Cancel the previous scheduled notification
+        self.app.root.after_cancel(self.timer_id)
+
         src_paths = list(self.app.changed_files)
         self.notification_queue.put(src_paths)
         self.app.changed_files.clear()
@@ -47,8 +50,29 @@ class FileChangeHandler(FileSystemEventHandler):
             self.app.changed_files.add(src_path)
 
             if not self.timer_running:
-                self.app.root.after(1000, self.notify_after_delay)
+                # Schedule the notification after a delay
+                self.timer_id = self.app.root.after(1000, self.notify_after_delay)
                 self.timer_running = True
+
+    def on_moved(self, event):
+        src_path = event.src_path
+        dest_path = event.dest_path
+
+        if self.ignore_file(src_path) or self.ignore_file(dest_path):
+            return
+
+        # Check if the move is within the same directory
+        if os.path.dirname(src_path) == os.path.dirname(dest_path):
+            self.on_modified(event)  # Treat it as a modification within the same directory
+        else:
+            # Treat it as a move to another directory
+            if src_path not in self.app.changed_files:
+                self.app.changed_files.add(src_path)
+
+                if not self.timer_running:
+                    self.app.root.after(1000, self.notify_after_delay)
+                    self.timer_running = True
+
 
     def on_created(self, event):
         src_path = event.src_path
