@@ -9,24 +9,27 @@ from watchdog.events import FileSystemEventHandler
 from queue import Queue
 from threading import Thread
 from plyer import notification
-from plyer.platforms.macosx import notification as mac_notification
 
-# Single Pop-up, 
+# Single Pop-up,
 # Better Formatting
-# Folder move notifications 
+# Folder move notifications
 # No Thumbs.db notifications, NO .DS_Store
 # AskToQuit
 # Scaling
+# MacOS Notifications
 
 class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, app, notification_queue):
         self.app = app
         self.notification_queue = notification_queue
         self.timer_running = False
+        self.timer_id = None  # Initialize timer_id
 
     def notify_after_delay(self):
         # Cancel the previous scheduled notification
-        self.app.root.after_cancel(self.timer_id)
+        if self.timer_id:
+            self.app.root.after_cancel(self.timer_id)
+            self.timer_id = None
 
         src_paths = list(self.app.changed_files)
         self.notification_queue.put(src_paths)
@@ -54,25 +57,6 @@ class FileChangeHandler(FileSystemEventHandler):
                 self.timer_id = self.app.root.after(1000, self.notify_after_delay)
                 self.timer_running = True
 
-    # def on_moved(self, event):
-    #     src_path = event.src_path
-    #     dest_path = event.dest_path
-
-    #     if self.ignore_file(src_path) or self.ignore_file(dest_path):
-    #         return
-
-    #     # Check if the move is within the same directory
-    #     if os.path.dirname(src_path) == os.path.dirname(dest_path):
-    #         self.on_modified(event)  # Treat it as a modification within the same directory
-    #     else:
-    #         # Treat it as a move to another directory
-    #         if src_path not in self.app.changed_files:
-    #             self.app.changed_files.add(src_path)
-
-    #             if not self.timer_running:
-    #                 self.app.root.after(1000, self.notify_after_delay)
-    #                 self.timer_running = True
-
     def on_moved(self, event):
         # Handle file movements (renaming or moving files/directories)
         src_path = event.src_path
@@ -88,7 +72,6 @@ class FileChangeHandler(FileSystemEventHandler):
                 self.timer_id = self.app.root.after(1000, self.notify_after_delay)
                 self.timer_running = True
 
-
     def on_created(self, event):
         src_path = event.src_path
 
@@ -102,7 +85,8 @@ class FileChangeHandler(FileSystemEventHandler):
             self.app.changed_files.add(src_path)
 
             if not self.timer_running:
-                self.app.root.after(1000, self.notify_after_delay)
+                # Schedule the notification after a delay
+                self.timer_id = self.app.root.after(1000, self.notify_after_delay)
                 self.timer_running = True
 
 class NotificationHandler(Thread):
@@ -211,12 +195,24 @@ class FileWatcherApp:
             print("Observer is not available or already Inactive")
 
     def show_notification(self, message):
-        # Use plyer to display native macOS notifications
+        # Use plyer to display native notifications
         notification.notify(
             title='File Change',
-            message=message,
+            message=message.replace('\n', ' '),  # Vervang nieuwe regels door spaties
             app_name='Luc\'s FileWatcher',
         )
+
+    # def show_notification(self, message):
+    #     # Use plyer to display native notifications
+    #     lines = message.split('\n')  # Split the message into lines
+
+    #     # Show notifications for each line
+    #     for line in lines:
+    #         notification.notify(
+    #             title='File Change',
+    #             message=line,
+    #             app_name='Luc\'s FileWatcher',
+    #         )
 
     def update_treeview(self):
         for item in self.tree.get_children():
