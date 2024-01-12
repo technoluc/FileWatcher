@@ -47,22 +47,6 @@ class FileChangeHandler(FileSystemEventHandler):
 
         return os.path.basename(file_path) in ignored_files
 
-    # def on_modified(self, event):
-    #     if event.is_directory:
-    #         return self.on_created(event)
-
-    #     src_path = event.src_path
-
-    #     if self.ignore_file(src_path):
-    #         return
-
-    #     if src_path not in self.app.changed_files:
-    #         self.app.changed_files.add(src_path)
-
-    #         if not self.timer_running:
-    #             # Schedule the notification after a delay
-    #             self.timer_id = self.app.root.after(1000, self.notify_after_delay)
-    #             self.timer_running = True
     def on_modified(self, event):
         if event.is_directory:
             return self.on_created(event)
@@ -95,22 +79,6 @@ class FileChangeHandler(FileSystemEventHandler):
                 self.timer_id = self.app.root.after(1000, self.notify_after_delay)
                 self.timer_running = True
 
-    # def on_created(self, event):
-    #     src_path = event.src_path
-
-    #     if self.ignore_file(src_path):
-    #         return
-
-    #     if event.is_directory:
-    #         return
-
-    #     if src_path not in self.app.changed_files:
-    #         self.app.changed_files.add(src_path)
-
-    #         if not self.timer_running:
-    #             # Schedule the notification after a delay
-    #             self.timer_id = self.app.root.after(1000, self.notify_after_delay)
-    #             self.timer_running = True
     
     def on_created(self, event):
         src_path = event.src_path
