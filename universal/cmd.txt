@@ -2,6 +2,16 @@ WIN PyInstaller:
 
 pyinstaller.exe --onefile --windowed --icon=ico.ico --add-binary "ico.ico;." .\FileWatcher_v8.py
 
+& "C:\Users\Luc\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\Scripts\pyinstaller.exe" `
+--onefile `
+--windowed `
+--icon ico.ico `
+--hidden-import plyer.platforms.win.notification `
+--hidden-import plyer `
+--add-binary "ico.ico;." `
+--add-data "$(python -c 'import plyer; print(plyer.__path__[0])'):." `
+.\FileWatcher_v9_uni.py
+
 
 MAC PyInstaller:
 
@@ -13,7 +23,7 @@ pyinstaller --onefile --windowed --icon=ico.ico \
 --hidden-import plyer.platforms.macosx.notifications \
 --add-data "$(python3 -c 'import plyer; print(plyer.__path__[0])'):." \
 --add-data "$(python3 -c 'import pyobjus; print(pyobjus.__path__[0])'):." \
-FileWatcher_v8_mac.py
+FileWatcher_v9_uni.py
 
 
 DEPENDENCIES: 
