@@ -206,7 +206,8 @@ class FileWatcherApp:
         # Use plyer to display native notifications
         notification.notify(
             title=app_title,
-            message=message.replace('\n', ' '),  # Vervang nieuwe regels door spaties
+            #message=message.replace('\n', ' '),  # Vervang nieuwe regels door spaties
+            message=message,
             app_name='Luc\'s FileWatcher',
         )
 

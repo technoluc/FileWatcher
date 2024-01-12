@@ -16,7 +16,6 @@ from plyer import notification
 # No Thumbs.db notifications, NO .DS_Store
 # AskToQuit
 # Scaling
-# MacOS Notifications
 
 class FileChangeHandler(FileSystemEventHandler):
     def __init__(self, app, notification_queue):
@@ -38,6 +37,15 @@ class FileChangeHandler(FileSystemEventHandler):
 
     def ignore_file(self, file_path):
         ignored_files = ['.DS_Store', 'Thumbs.db']
+
+        # Check if the file is hidden
+        if os.name == 'nt':  # For Windows
+            if os.path.basename(file_path).startswith('.'):
+                return True
+        else:
+            if file_path.startswith('.'):
+                return True
+
         return os.path.basename(file_path) in ignored_files
 
     def on_modified(self, event):
@@ -58,7 +66,6 @@ class FileChangeHandler(FileSystemEventHandler):
                 self.timer_running = True
 
     def on_moved(self, event):
-        # Handle file movements (renaming or moving files/directories)
         src_path = event.src_path
 
         if self.ignore_file(src_path):
