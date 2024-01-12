@@ -242,12 +242,21 @@ class FileWatcherApp:
 
     def show_notification(self, notification_data):
         app_title, message = notification_data
+        
+        icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ico.ico')
+        if os.path.exists(icon_path):
+            root.iconbitmap(icon_path)
+        else:
+            print("Icon file not found:", icon_path)
+
         # Use plyer to display native notifications
         notification.notify(
             title=app_title,
             #message=message.replace('\n', ' '),  # Vervang nieuwe regels door spaties
             message=message,
             app_name='Luc\'s FileWatcher',
+            app_icon=(icon_path),  # Voeg hier het volledige pad toe
+
         )
 
     def update_treeview(self):

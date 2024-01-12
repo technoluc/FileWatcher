@@ -13,6 +13,19 @@ pyinstaller.exe --onefile --windowed --icon=ico.ico --add-binary "ico.ico;." .\F
 .\FileWatcher_v9_uni.py
 
 
+& "C:\Users\Luc\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\Scripts\pyinstaller.exe" `
+--onefile `
+--windowed `
+--icon ico.ico `
+--hidden-import plyer.platforms.win.notification `
+--hidden-import plyer `
+--add-binary "ico.ico;." `
+--add-data "$(python -c 'import plyer; print(plyer.__path__[0])'):." `
+--name "Luc`s FileWatcher" `
+".\FileWatcher_v9_uni.py"
+
+
+
 MAC PyInstaller:
 
 pyinstaller --onefile --windowed --icon=ico.ico \
