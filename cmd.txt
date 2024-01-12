@@ -1,47 +1,26 @@
-WIN:
-pyinstaller.exe --onefile --windowed --icon=ico.ico --add-binary "ico.ico;." .\FileWatcher_v8.py
-
-pyinstaller.exe --onefile --windowed --icon=ico.ico --add-binary "ico.icns;." .\FileWatcher_v8.py
-
+WIN PyInstaller:
 
 pyinstaller.exe --onefile --windowed --icon=ico.ico --add-binary "ico.ico;." .\FileWatcher_v8.py
 
-C:\Users\Luc\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\Scripts\pyinstaller.exe `
---onefile --windowed --icon=ico.ico --hidden-import plyer.platforms.win.notification --hidden-import=plyer `
---add-binary "ico.ico;." --add-data "$(python -c 'import plyer; print(plyer.__path__[0])');." .\new.py
 
-MAC:
-pyinstaller --onefile --windowed --icon=ico.ico --add-binary "ico.ico:." FileWatcher_v8.py
+MAC PyInstaller:
 
-pyinstaller --onefile --windowed --icon=ico.ico --add-binary "ico.ico:." --hidden-import=plyer --hidden-import=pyobjus FileWatcher_v8_mac.py 
+pyinstaller --onefile --windowed --icon=ico.ico \
+--add-binary "ico.ico:." \
+--hidden-import pyobjus \
+--hidden-import plyer \
+--hidden-import plyer.platforms.macosx \
+--hidden-import plyer.platforms.macosx.notifications \
+--add-data "$(python3 -c 'import plyer; print(plyer.__path__[0])'):." \
+--add-data "$(python3 -c 'import pyobjus; print(pyobjus.__path__[0])'):." \
+FileWatcher_v8_mac.py
 
-pyinstaller your_script.py --onefile --windowed --icon=ico.ico --hidden-import=plyer --hidden-import=plyer.platforms.darwin --add-binary "ico.ico;." --add-data "$(python -c 'import plyer; print(plyer.__path__[0])');." .\new.py
 
-
-v8_mac == macOS notificaties
-
-Mac:
-
+DEPENDENCIES: 
 pip3 install Pillow watchdog pyobjus plyer
 brew install python3 python-tk@3.11
 
 
-PROBEREN: werkte niet
-python3 -m venv venv
-source venv/bin/activate
-pip3 install Pillow watchdog pyobjus plyer
-pyinstaller --onefile --windowed --icon=ico.ico --add-binary "ico.ico:." --hidden-import=plyer --hidden-import=pyobjus FileWatcher_v8_mac.py
-
-PROBEREN: werkte niet
-pip install py-notifier
-pyinstaller --onefile --windowed --icon=ico.ico --add-binary "ico.ico:." --hidden-import=py-notifier FileWatcher_v8_mac.py 
 
 
 
-PROBEREN: 
-mac1: pyinstaller --onefile --windowed --icon=ico.ico --add-binary "ico.ico:." --hidden-import=plyer --hidden-import=pyobjus FileWatcher_v8_mac.py 
-mac2: install xcode, pip3 install plyer, pip3 install pyobjus
-
-BIJNA:
-
-pip3 install macos-notifications

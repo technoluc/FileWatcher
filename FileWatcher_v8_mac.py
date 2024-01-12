@@ -1,7 +1,6 @@
 import os
 import json
 import time
-import threading
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from watchdog.observers import Observer
@@ -48,6 +47,22 @@ class FileChangeHandler(FileSystemEventHandler):
 
         return os.path.basename(file_path) in ignored_files
 
+    # def on_modified(self, event):
+    #     if event.is_directory:
+    #         return self.on_created(event)
+
+    #     src_path = event.src_path
+
+    #     if self.ignore_file(src_path):
+    #         return
+
+    #     if src_path not in self.app.changed_files:
+    #         self.app.changed_files.add(src_path)
+
+    #         if not self.timer_running:
+    #             # Schedule the notification after a delay
+    #             self.timer_id = self.app.root.after(1000, self.notify_after_delay)
+    #             self.timer_running = True
     def on_modified(self, event):
         if event.is_directory:
             return self.on_created(event)
@@ -57,11 +72,10 @@ class FileChangeHandler(FileSystemEventHandler):
         if self.ignore_file(src_path):
             return
 
-        if src_path not in self.app.changed_files:
+        if src_path not in self.app.changed_files and os.path.getmtime(src_path) != os.path.getctime(src_path):
             self.app.changed_files.add(src_path)
 
             if not self.timer_running:
-                # Schedule the notification after a delay
                 self.timer_id = self.app.root.after(1000, self.notify_after_delay)
                 self.timer_running = True
 
@@ -79,20 +93,33 @@ class FileChangeHandler(FileSystemEventHandler):
                 self.timer_id = self.app.root.after(1000, self.notify_after_delay)
                 self.timer_running = True
 
+    # def on_created(self, event):
+    #     src_path = event.src_path
+
+    #     if self.ignore_file(src_path):
+    #         return
+
+    #     if event.is_directory:
+    #         return
+
+    #     if src_path not in self.app.changed_files:
+    #         self.app.changed_files.add(src_path)
+
+    #         if not self.timer_running:
+    #             # Schedule the notification after a delay
+    #             self.timer_id = self.app.root.after(1000, self.notify_after_delay)
+    #             self.timer_running = True
     def on_created(self, event):
         src_path = event.src_path
 
         if self.ignore_file(src_path):
             return
 
-        if event.is_directory:
-            return
-
-        if src_path not in self.app.changed_files:
+        # Check if it's the initial creation and not an opening
+        if src_path not in self.app.changed_files and os.path.getsize(src_path) > 0:
             self.app.changed_files.add(src_path)
 
             if not self.timer_running:
-                # Schedule the notification after a delay
                 self.timer_id = self.app.root.after(1000, self.notify_after_delay)
                 self.timer_running = True
 
