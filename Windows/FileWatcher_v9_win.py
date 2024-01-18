@@ -39,7 +39,7 @@ class FileChangeHandler(FileSystemEventHandler):
 
         # Check if the file is hidden
         if os.name == 'nt':  # For Windows
-            if os.path.basename(file_path).startswith('.'):
+            if os.path.basename(file_path).startswith('.') or os.path.basename(file_path).startswith('~$'):
                 return True
         else:
             if file_path.startswith('.') or file_path.startswith('~$'):
