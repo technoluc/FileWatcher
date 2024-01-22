@@ -1,6 +1,20 @@
 WIN PyInstaller:
 
+pip install Pillow watchdog plyer pyinstaller
+
 pyinstaller.exe --onefile --windowed --icon=ico.ico --add-binary "ico.ico;." .\FileWatcher_v8.py
+
+& "$env:userprofile\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\Scripts\pyinstaller.exe" `
+
+& "pyinstaller.exe" `
+--onefile `
+--windowed `
+--icon ico.ico `
+--hidden-import plyer.platforms.win.notification `
+--hidden-import plyer `
+--add-binary "ico.ico;." `
+--add-data "$(python -c 'import plyer; print(plyer.__path__[0])'):." `
+.\FileWatcher_v9_win.py
 
 & "C:\Users\Luc\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\Scripts\pyinstaller.exe" `
 --onefile `
@@ -40,7 +54,7 @@ FileWatcher_v9_uni.py
 
 
 DEPENDENCIES: 
-pip3 install Pillow watchdog pyobjus plyer
+pip3 install Pillow watchdog pyobjus plyer pyinstaller
 brew install python3 python-tk@3.11
 
 
